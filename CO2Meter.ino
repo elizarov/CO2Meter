@@ -1,4 +1,4 @@
-
+ 
 #include <FixNum.h>
 #include <Timeout.h>
 
@@ -59,8 +59,8 @@ bool co2Update() {
 // ------------- Main -------------
 
 void setup() {
-  network.setup();
   display.setup();
+  network.setup();
   Serial.begin(9600);
   Serial.swap();
   Serial.setTimeout(2000);

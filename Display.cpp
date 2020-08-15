@@ -18,6 +18,8 @@ Display display;
 void Display::setup() {
   d.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 64x48)
   d.setRotation(2);
+  d.clearDisplay();
+  d.display();
 }
 
 void Display::update() {
