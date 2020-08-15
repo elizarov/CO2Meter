@@ -49,4 +49,6 @@ private:
   Timeout _updateTimeout;
 };
 
+extern DHT22 dht22;
+
 #endif

@@ -14,6 +14,9 @@ public:
   int16_t addr = -1; // last byte
   bool blinkState = true;
   bool blinkPacket = false;
+
+  void updateCO2();
+  void updateDHT22();
 };
 
 extern Data dd;

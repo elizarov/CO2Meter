@@ -20,6 +20,8 @@
 
 #include "DHT22.h"
 
+DHT22 dht22(D0);
+
 const unsigned long INITIAL_TIMEOUT = 500;
 const unsigned long READING_TIMEOUT = 2500; // minimum interval between readings
 

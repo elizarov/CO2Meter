@@ -7,6 +7,7 @@
 #include <Timeout.h>
 
 #include "Data.h"
+#include "Config.h"
 #include "Display.h"
 
 // SCL GPIO5
@@ -51,29 +52,32 @@ void Display::update() {
     d.print('%');
   }
 
-  // Sensor state char
-  d.setCursor(0, 40);
-  d.print(dd.state);
-
-  // RSSI
-  for (uint8_t i = 1; i <= dd.level; i++) {
-    d.fillRect(3 * i - 3, 8 - 2 * i, 2, 2 * i, WHITE);
+  // Blinking dot or sensor state char
+  if (dd.blinkState) { 
+    if (dd.blinkPacket) {
+      d.drawCircle(2, 43, 2, WHITE);
+    } else {
+      d.fillCircle(2, 44, 2, WHITE);
+    }
+  } else {
+    d.setCursor(0, 40);
+    d.print(dd.state);
   }
+
+  // node id
+  d.setCursor(0, 0);
+  d.print(config.nodeId);
 
   // addr
   if (dd.addr >= 0) {
-    d.setCursor(32, 0);
+    d.setCursor(25, 0);
     d.print('.');
     d.print(dd.addr, DEC);
   }
 
-  // blinking dot
-  if (dd.blinkState) {
-    if (dd.blinkPacket) {
-      d.drawCircle(60, 3, 2, WHITE);
-    } else {
-      d.fillCircle(60, 3, 2, WHITE);
-    }
+  // RSSI
+  for (uint8_t i = 1; i <= dd.level; i++) {
+    d.fillRect(49 + 3 * i, 8 - 2 * i, 2, 2 * i, WHITE);
   }
 
   d.display();

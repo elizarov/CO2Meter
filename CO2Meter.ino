@@ -2,14 +2,13 @@
 #include <FixNum.h>
 #include <Timeout.h>
 
+#include "Config.h"
 #include "Data.h"
 #include "Network.h"
 #include "Web.h"
 #include "Display.h"
 #include "DHT22.h"
 #include "CO2.h"
-
-DHT22 dht22(D0);
 
 // ------------- blink -------------
 
@@ -32,26 +31,33 @@ bool blinkUpdate() {
 
 bool mcast() {
   String packet = F("[");
+  packet += config.nodeId;
+  packet += ':';
+  bool f = false;
   if (dd.co2ppm.valid()) {
     packet += 'c';
     packet += dd.co2ppm.format();
+    f = true;
   }
   if (dd.temp.valid()) {
     packet += 't';
     packet += dd.temp.format();
+    f = true;
   }
   if (dd.hum.valid()) {
     packet += 'h';
     packet += dd.hum.format();
+    f = true;
   }
   packet += ']';
-  if (packet == F("[]")) return false;
+  if (!f) return false;
   return network.sendMcast(packet);
 }
 
 // ------------- Main -------------
 
 void setup() {
+  config.setup();
   display.setup();
   network.setup();
   web.setup();
@@ -67,16 +73,11 @@ void loop() {
 
   // DHT22
   bool dht22updated = dht22.update();
-  if (dht22updated) {
-    dd.temp = dht22.temp;
-    dd.hum = dht22.hum;
-  }
+  if (dht22updated) dd.updateDHT22();
 
   // CO2
   bool co2updated = co2.update();
-  if (co2updated) {
-    dd.co2ppm = co2.ppm; 
-  }
+  if (co2updated) dd.updateCO2();
 
   // sensor(s) error state
   dd.state = dht22.state();
