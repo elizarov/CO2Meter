@@ -35,9 +35,9 @@ void Display::update() {
 
     // CO2 PPM label
     d.setCursor(0, 10);
-    d.print("CO2");
+    d.print(F("CO2"));
     d.setCursor(40, 10);
-    d.print("ppm");
+    d.print(F("ppm"));
   }
   
   // temperature & humidity
@@ -48,7 +48,7 @@ void Display::update() {
   if (dd.hum.valid()) {
     d.setCursor(40, 40);
     d.print(dd.hum.format());
-    d.print("%");
+    d.print('%');
   }
 
   // Sensor state char
@@ -63,7 +63,7 @@ void Display::update() {
   // addr
   if (dd.addr >= 0) {
     d.setCursor(32, 0);
-    d.print(".");
+    d.print('.');
     d.print(dd.addr, DEC);
   }
 

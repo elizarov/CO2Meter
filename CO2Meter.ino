@@ -4,8 +4,10 @@
 
 #include "Data.h"
 #include "Network.h"
+#include "Web.h"
 #include "Display.h"
 #include "DHT22.h"
+#include "CO2.h"
 
 DHT22 dht22(D0);
 
@@ -26,34 +28,25 @@ bool blinkUpdate() {
   return true;
 }
 
-// ------------- CO2 -------------
+// ------------- Multicast -------------
 
-const unsigned long CO2_INITIAL_DELAY = 500;
-const unsigned long CO2_TIMEOUT = 10000;
-
-uint8_t co2cmd[9] = {0xFF,0x01,0x86,0x00,0x00,0x00,0x00,0x00,0x79};
-uint8_t co2resp[9];
-fixnum16_0 co2ppm;
-char co2state;
-Timeout co2Timeout(CO2_INITIAL_DELAY);
-
-bool co2Update() {
-  if (!co2Timeout.check()) return false;
-  co2Timeout.reset(CO2_TIMEOUT);
-  co2ppm.clear();
-  co2state = ' ';
-  while (Serial.available()) Serial.read();
-  Serial.write(co2cmd, 9);
-  size_t n = Serial.readBytes(co2resp, 9);
-  if (n < 9) return true;
-  uint8_t checksum = 0;
-  for (int i = 1; i <= 8; i++) checksum += co2resp[i];
-  if (co2resp[0] == 0xFF && co2resp[1] == 0x86 && checksum == 0) {
-    co2ppm = fixnum16_0((((uint16_t)co2resp[2]) << 8) + (uint16_t)co2resp[3]);
-  } else {
-    co2state = '*';
+bool mcast() {
+  String packet = F("[");
+  if (dd.co2ppm.valid()) {
+    packet += 'c';
+    packet += dd.co2ppm.format();
   }
-  return true;
+  if (dd.temp.valid()) {
+    packet += 't';
+    packet += dd.temp.format();
+  }
+  if (dd.hum.valid()) {
+    packet += 'h';
+    packet += dd.hum.format();
+  }
+  packet += ']';
+  if (packet == F("[]")) return false;
+  return network.sendMcast(packet);
 }
 
 // ------------- Main -------------
@@ -61,31 +54,14 @@ bool co2Update() {
 void setup() {
   display.setup();
   network.setup();
-  Serial.begin(9600);
-  Serial.swap();
-  Serial.setTimeout(2000);
-}
-
-bool mcast() {
-  String packet = "[";
-  if (dd.co2ppm.valid()) {
-    packet += "c";
-    packet += dd.co2ppm.format();
-  }
-  if (dd.temp.valid()) {
-    packet += "t";
-    packet += dd.temp.format();
-  }
-  if (dd.hum.valid()) {
-    packet += "h";
-    packet += dd.hum.format();
-  }
-  packet += "]";
-  if (packet == String("[]")) return false;
-  return network.sendMcast(packet);
+  web.setup();
+  co2.setup();
 }
 
 void loop() {
+  // Web server
+  web.update();
+  
   // Blink
   bool blinkUpdated = blinkUpdate();
 
@@ -97,15 +73,14 @@ void loop() {
   }
 
   // CO2
-  bool co2updated = co2Update();
+  bool co2updated = co2.update();
   if (co2updated) {
-    dd.co2ppm = co2ppm; 
+    dd.co2ppm = co2.ppm; 
   }
 
   // sensor(s) error state
-  char state = dht22.state();
-  if (state == ' ') state = co2state;
-  dd.state = state;
+  dd.state = dht22.state();
+  if (dd.state == ' ') dd.state = co2.state;
 
   // network
   uint8_t oldLevel = dd.level;
