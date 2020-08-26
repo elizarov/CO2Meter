@@ -22,14 +22,13 @@
 
 DHT22 dht22(D0);
 
-const unsigned long INITIAL_TIMEOUT = 500;
-const unsigned long READING_TIMEOUT = 2500; // minimum interval between readings
+const unsigned long UPDATE_TIMEOUT = 2500; // minimum interval between readings
 
-DHT22::DHT22(uint8_t pin) : _pin(pin), _updateTimeout(INITIAL_TIMEOUT) {}
+DHT22::DHT22(uint8_t pin) : _pin(pin), _updateTimeout(0) {}
 
 bool DHT22::update() {
   if (!_updateTimeout.check()) return false;
-  _updateTimeout.reset(READING_TIMEOUT);
+  _updateTimeout.reset(UPDATE_TIMEOUT);
 
   temp.clear();
   hum.clear();

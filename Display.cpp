@@ -8,6 +8,7 @@
 
 #include "Data.h"
 #include "Config.h"
+#include "OTA.h"
 #include "Display.h"
 
 // SCL GPIO5
@@ -16,17 +17,53 @@ Adafruit_SSD1306 d;
 
 Display display;
 
+const unsigned long MIN_SHOW_TIME = 100;
+unsigned long prevShowTime = 0;
+
 void Display::setup() {
   d.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C addr 0x3C (for the 64x48)
   d.setRotation(2);
-  d.clearDisplay();
-  d.display();
+  show(SETUP_DISPLAY);
 }
 
-void Display::update() {
+void displayNodeId() {
+  d.setCursor(0, 0);
+  d.print(config.nodeId);
+}
+
+void Display::show(SetupPhase phase) {
   d.clearDisplay();
-  d.setTextColor(WHITE);
-  
+  d.setTextColor(WHITE); 
+  displayNodeId(); 
+  d.setCursor(0, 16);
+  if (phase <= SETUP_DONE) {
+    d.print(F("SETUP:"));
+  } else {
+    d.print(F("UPDATE: "));
+  }
+  d.setCursor(0, 24);
+  switch (phase) {
+    case SETUP_DISPLAY: d.print(F("DISPLAY")); break;
+    case SETUP_NETWORK: d.print(F("NETWORK")); break;
+    case SETUP_OTA:     d.print(F("OTA")); break;
+    case SETUP_WEB:     d.print(F("WEB")); break;
+    case SETUP_CO2:     d.print(F("CO2")); break;
+    case SETUP_DONE:    d.print(F("DONE")); break;
+    case UPDATE_TEMP:   d.print(F("TEMP")); break;
+    case UPDATE_CO2:    d.print(F("CO2")); break;
+  }
+  d.setCursor(0, 32);
+  d.print(phase, DEC);
+  d.print('/');
+  d.print(UPDATE_DONE - 1, DEC);
+  d.display();
+  unsigned long now = millis();
+  unsigned long since = now - prevShowTime;
+  if (since < MIN_SHOW_TIME) delay(MIN_SHOW_TIME - since);
+  prevShowTime = now;
+}
+
+void displaySensors() {
   // CO2 PPM num
   if (dd.co2ppm.valid()) {  
     d.setFont(&FreeMonoBold12pt7b);
@@ -63,11 +100,33 @@ void Display::update() {
     d.setCursor(0, 40);
     d.print(dd.state);
   }
+}
 
-  // node id
-  d.setCursor(0, 0);
-  d.print(config.nodeId);
+void displayOTA() {
+  d.setCursor(0, 16);
+  d.print(F("FLASH:"));
+  d.setCursor(0, 24);
+  d.print(ota.progress, DEC);
+  d.print('%');
+  d.setCursor(0, 32);
+  switch (ota.status) {
+    case OTA_DONE: d.print(F("DONE")); break;
+    case OTA_ERROR: d.print(F("ERROR")); break;
+  }
+}
 
+void Display::update() {
+  d.clearDisplay();
+  d.setTextColor(WHITE);
+  displayNodeId();
+
+  // Dipslay OTA status or sensors
+  if (ota.status != OTA_NONE) {
+    displayOTA();
+  } else {
+    displaySensors();
+  }
+  
   // addr
   if (dd.addr >= 0) {
     d.setCursor(25, 0);

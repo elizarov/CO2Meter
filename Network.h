@@ -6,9 +6,10 @@
 class Network {
 public:
   void setup();
+  bool update();
   bool sendMcast(String& packet);                    
-  uint8_t level(); // 0-4
-  int16_t addr(); // last byte or -1
+  uint8_t level = 0; // 0-4
+  int16_t addr = -1; // last byte or -1
 };
 
 extern Network network;

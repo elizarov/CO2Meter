@@ -3,13 +3,12 @@
 
 CO2 co2;
 
-const unsigned long INITIAL_DELAY = 500;
-const unsigned long TIMEOUT = 10000;
+const unsigned long UPDATE_TIMEOUT = 10000;
 
 uint8_t readCmd[9]      = {0xFF,0x01,0x86,0x00,0x00,0x00,0x00,0x00,0x79};
 uint8_t calibrateCmd[9] = {0xFF,0x01,0x87,0x00,0x00,0x00,0x00,0x00,0x78};
 uint8_t resp[9];
-Timeout timeout(INITIAL_DELAY);
+Timeout timeout(0);
 bool wasCalibrated = false;
 
 void CO2::setup() {
@@ -32,7 +31,7 @@ SendResult sendReceive(uint8_t* cmd) {
 
 bool CO2::update() {
   if (!timeout.check()) return false;
-  timeout.reset(TIMEOUT);
+  timeout.reset(UPDATE_TIMEOUT);
   ppm.clear();
   state = ' ';
   if (wasCalibrated) {
