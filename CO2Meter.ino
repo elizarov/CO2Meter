@@ -30,28 +30,51 @@ bool blinkUpdate() {
 
 // ------------- Multicast -------------
 
+unsigned long daystart = 0;
+int16_t updays = 0;
+char uptimeBuf[11];
+//   0123456789
+//   ddddhhmmss
+
 bool mcast() {
   String packet = F("[");
   packet += config.nodeId;
   packet += ':';
-  bool f = false;
   if (dd.co2ppm.valid()) {
     packet += 'c';
     packet += dd.co2ppm.format();
-    f = true;
   }
   if (dd.temp.valid()) {
     packet += 't';
     packet += dd.temp.format();
-    f = true;
   }
   if (dd.hum.valid()) {
     packet += 'h';
     packet += dd.hum.format();
-    f = true;
   }
+  if (dd.rssi != 0) {
+    packet += 'r';
+    packet += String(dd.rssi, DEC);
+  }
+  // uptime
+  packet += 'u';
+  unsigned long time = millis();
+  while (time - daystart > Timeout::DAY) {
+    daystart += Timeout::DAY;
+    updays++;
+  }
+  formatDecimal(updays, &uptimeBuf[0], 4, FMT_ZERO | FMT_RIGHT);
+  time -= daystart;
+  time /= 1000; // convert seconds
+  formatDecimal((int8_t)(time % 60), &uptimeBuf[8], 2, FMT_ZERO | FMT_RIGHT);
+  time /= 60; // minutes
+  formatDecimal((int8_t)(time % 60), &uptimeBuf[6], 2, FMT_ZERO | FMT_RIGHT);
+  time /= 60; // hours
+  formatDecimal((int8_t)time, &uptimeBuf[4], 2, FMT_ZERO | FMT_RIGHT);
+  uptimeBuf[10] = 0;
+  packet += uptimeBuf;
+  // done
   packet += ']';
-  if (!f) return false;
   return network.sendMcast(packet);
 }
 
@@ -84,7 +107,7 @@ void loop() {
   web.update();
 
   // network state
-  dd.level = network.level;  
+  dd.rssi = network.rssi;  
   dd.addr = network.addr;
   
   // DHT22

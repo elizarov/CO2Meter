@@ -1,10 +1,11 @@
 #include <SPI.h>
 #include <Wire.h>
 #include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
+#include <Adafruit_SSD1306_Wemos_Mini_OLED.h>
 #include <Fonts/FreeMonoBold12pt7b.h>
 
 #include <Timeout.h>
+#include <DrawRSSI.h>
 
 #include "Data.h"
 #include "Config.h"
@@ -135,9 +136,7 @@ void Display::update() {
   }
 
   // RSSI
-  for (uint8_t i = 1; i <= dd.level; i++) {
-    d.fillRect(49 + 3 * i, 8 - 2 * i, 2, 2 * i, WHITE);
-  }
+  drawRSSI(d, 54, 0, dd.rssi, WHITE);
 
   d.display();
 }

@@ -1,5 +1,4 @@
-#ifndef _DISPLAY_H
-#define _DISPLAY_H
+#pragma once
 
 enum SetupPhase {
   SETUP_DISPLAY,
@@ -21,5 +20,3 @@ public:
 };
 
 extern Display display;
-
-#endif

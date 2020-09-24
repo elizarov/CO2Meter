@@ -20,23 +20,14 @@ void Network::setup() {
   networkTimeout.reset(NETWORK_TIMEOUT);
 }
 
-uint8_t getLevel() {
-  int rssi = WiFi.RSSI();
-  if (rssi >= -40) return 4;
-  if (rssi >= -50) return 3;
-  if (rssi >= -60) return 2;
-  if (rssi >= -70) return 1;
-  return 0; 
-}
-
 bool Network::update() {
   bool wasConnected = addr >= 0;
   bool isConnected = WiFi.status() == WL_CONNECTED;
   if (isConnected) {
-    level = getLevel();
+    rssi = WiFi.RSSI();
     addr = WiFi.localIP()[3]; 
   } else {
-    level = 0;
+    rssi = 0;
     addr = -1;
     if (wasConnected) {
       networkTimeout.reset(NETWORK_TIMEOUT);

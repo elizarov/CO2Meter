@@ -10,7 +10,7 @@ public:
   fixnum16_1 temp;
   fixnum16_0 hum;
   char state = ' ';
-  uint8_t level = 0; // 0-4
+  int32_t rssi = 0; // 0 -> No connection
   int16_t addr = -1; // last byte
   bool blinkState = true;
   bool blinkPacket = false;
