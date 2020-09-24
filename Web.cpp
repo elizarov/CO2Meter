@@ -93,24 +93,40 @@ void handleConfig() {
 void handleCalibration() {
   String m = navigation(CALIBRATION);
   if (s.method() == HTTP_POST) {
-    m += F("Calibration: "); 
-    if (co2.calibrate()) {
+    bool result = false;
+    if (s.hasArg("cal")) {
+      m += F("Manual Calibration"); 
+      result = co2.calibrate();
+    } else if (s.hasArg("on")) {
+      m += F("Auto Calibration: ON");
+      result = co2.autoCalibrate(true);
+    } else if (s.hasArg("off")) {
+      m += F("Auto Calibration: OFF");
+      result = co2.autoCalibrate(false);
+    } else {
+      m += F("Unknown");
+    }
+    m += F(": ");
+    if (result) {
       m += F("SUCCESS");
     } else {
       m += F("FAILURE");
     }
   } else {
     m += F("<form method='post'>");
-    m += F("<input type='submit' value='Calibrate'>");
+    m += F("<input type='submit' name='cal' value='Manual Calibration'>");
+    m += F("<p>Auto Calibration: ");
+    m += F("<input type='submit' name='on'  value='ON'>&nbsp;");
+    m += F("<input type='submit' name='off' value='OFF'>");
     m += F("</form>");
   }
   s.send(200, "text/html", m);
 }
 
+
 void handleNotFound() {
   s.send(404, "text/plain", "Not found");
 }
-
 
 void Web::setup() {
   for (int i = 0; i < N_PAGES; i++) s.on(links[i], handlers[i]);

@@ -13,7 +13,8 @@ public:
 
   void setup();
   bool update();
-  bool calibrate();
+  bool calibrate();  
+  bool autoCalibrate(bool on);
 };
 
 extern CO2 co2;

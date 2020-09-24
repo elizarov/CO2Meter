@@ -1,5 +1,4 @@
-#ifndef _WEB_H
-#define _WEB_H
+#pragma once
 
 class Web {
 public:
@@ -8,5 +7,3 @@ public:
 };
 
 extern Web web;
-
-#endif
