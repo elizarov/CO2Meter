@@ -136,7 +136,7 @@ void Display::update() {
   }
 
   // RSSI
-  drawRSSI(d, 54, 0, dd.rssi, WHITE);
+  drawRSSI(d, 53, 0, dd.rssi, WHITE);
 
   d.display();
 }
