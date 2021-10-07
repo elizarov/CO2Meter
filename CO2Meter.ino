@@ -93,9 +93,8 @@ void setup() {
   display.show(SETUP_CO2);
   co2.setup();
   display.show(SETUP_DONE);
+  digitalWrite(LED_BUILTIN, 0);
 }
-
-bool firstLoop = true;
 
 void loop() {
   // Blink
@@ -111,12 +110,10 @@ void loop() {
   dd.addr = network.addr;
   
   // DHT22
-  if (firstLoop) display.show(UPDATE_TEMP);
   bool dht22updated = dht22.update();
   if (dht22updated) dd.updateDHT22();
 
   // CO2
-  if (firstLoop) display.show(UPDATE_CO2);
   bool co2updated = co2.update();
   if (co2updated) dd.updateCO2();
 
@@ -130,11 +127,7 @@ void loop() {
   }
 
   // Display
-  if (firstLoop || networkUpdated || blinkUpdated || dht22updated || co2updated) {
-    display.update();
-  }
-  if (firstLoop) {
-    firstLoop = false;
-    digitalWrite(LED_BUILTIN, 0);
+  if (networkUpdated || blinkUpdated || dht22updated || co2updated) {
+    display.update(networkUpdated || co2updated);
   }
 }

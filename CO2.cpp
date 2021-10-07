@@ -3,14 +3,16 @@
 
 CO2 co2;
 
-const unsigned long UPDATE_TIMEOUT = 10000;
+const uint16_t ERROR_PPM = 5000; // ERROR VALUE
+
+const unsigned long UPDATE_TIMEOUT = 15000;
 
 uint8_t readCmd[9]             = {0xFF,0x01,0x86,0x00,0x00,0x00,0x00,0x00,0x79};
 uint8_t calibrateCmd[9]        = {0xFF,0x01,0x87,0x00,0x00,0x00,0x00,0x00,0x78};
 uint8_t autoCalibrateOnCmd[9]  = {0xFF,0x01,0x79,0xA0,0x00,0x00,0x00,0x00,0xE6};
 uint8_t autoCalibrateOffCmd[9] = {0xFF,0x01,0x79,0x00,0x00,0x00,0x00,0x00,0x86};
 uint8_t resp[9];
-Timeout timeout(0);
+Timeout timeout(UPDATE_TIMEOUT); // save CO2 meter -- wait 15 seconds
 bool wasCalibrated = false;
 
 void CO2::setup() {
@@ -41,13 +43,15 @@ bool CO2::update() {
     state = '^';
     return true; // wait one more cycle before reading
   }
+  uint16_t rawPpm = ERROR_PPM;
   switch (sendReceive(readCmd)) {
     case SEND_OK:
-      ppm = fixnum16_0((((uint16_t)resp[2]) << 8) + (uint16_t)resp[3]);
+      rawPpm = (((uint16_t)resp[2]) << 8) + (uint16_t)resp[3]; 
       break;
     case SEND_ERROR:  
       state = '*';
   }
+  ppm = (rawPpm < ERROR_PPM) ? fixnum16_0(rawPpm) : fixnum16_0::invalid();
   return true;
 }
 
