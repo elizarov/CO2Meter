@@ -26,3 +26,5 @@ Conections:
                      |               |
                      +---------------+
 ```
+
+Note: my board is "LOLIN(WEMOS) D1 mini (clone)" is Arduino EPS core 3.1.2
