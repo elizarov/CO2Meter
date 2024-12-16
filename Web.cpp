@@ -66,7 +66,7 @@ void handleMain() {
   s.send(200, "text/html", m);
 }
 
-String formInputText(char* name, char* label, char* value) {
+String formInputText(char* name, char* label, const char* value) {
   String m;
   m += F("<label for='"); m += name; m += F("'>"); m += label; m += F(":<label><br>");
   m += F("<input type='text' id='"); m += name; m += F("' name='"); m += name; m += F("' value='"); m += value; m += F("'><br>");
